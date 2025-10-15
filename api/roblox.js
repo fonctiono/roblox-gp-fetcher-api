@@ -1,9 +1,8 @@
 import pLimit from "p-limit";
 import { fetchData } from "./utils.js";
 
-const concurrencyLimit = pLimit(5); // Balanced concurrency
+const concurrencyLimit = pLimit(5);
 
-// Fetch games with pagination
 const fetchUserGames = async (userId, accessFilter) => {
   let cursor = "",
     games = [];
@@ -16,7 +15,6 @@ const fetchUserGames = async (userId, accessFilter) => {
   return games;
 };
 
-// Fetch passes with pagination
 const fetchGamePasses = async (universeId) => {
   let cursor = "",
     passes = [];
@@ -29,9 +27,8 @@ const fetchGamePasses = async (universeId) => {
   return passes.filter((pass) => pass.price != null);
 };
 
-// Main: Optimized fetching of game passes
 export const fetchAllUserGamePasses = async (userId) => {
-  const games = await fetchUserGames(userId, 2); // Public only, no private based on your test (adjust if needed)
+  const games = await fetchUserGames(userId, 2);
 
   let results = [],
     batchSize = 5;
@@ -41,10 +38,9 @@ export const fetchAllUserGamePasses = async (userId) => {
       batch.map((game) => concurrencyLimit(() => fetchGamePasses(game.id)))
     );
     results.push(...batchResults.flat());
-    await new Promise((r) => setTimeout(r, 300)); // 300ms pause between batches
+    await new Promise((r) => setTimeout(r, 300));
   }
 
-  // Deduplicate
   const uniquePasses = {};
   results.forEach((pass) => (uniquePasses[pass.id] = pass));
 
